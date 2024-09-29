@@ -4,24 +4,26 @@ const initialTravellers = [
     salutation: "Mr.",
     firstName: "Jack",
     lastName: "Reacher",
-    dateOfBirth: new Date(),
+    dateOfBirth: "1970-01-01",
     passportNumber: "E1234567X",
     nationality: "Singaporean",
     countryOfResidence: "Singapore",
     phone: 88885555,
-    bookingTime: new Date(),
+    email: "hello@tickettoride.com",
+    bookingTime: "",
   },
   {
     id: 2,
     salutation: "Ms.",
     firstName: "Rose",
     lastName: "Wilted",
-    dateOfBirth: new Date(),
+    dateOfBirth: "1970-01-01",
     passportNumber: "E1234567Z",
     nationality: "Singaporean",
     countryOfResidence: "Singapore",
     phone: 88884444,
-    bookingTime: new Date(),
+    email: "hello@tickettoride.com",
+    bookingTime: "",
   },
 ];
 
@@ -39,56 +41,182 @@ function TravellerRow({ traveller }) {
   );
 }
 
-function Display({ travellers }) {
+function DisplayPage({ travellers }) {
   /*Q3. Write code to render rows of table, reach corresponding to one traveller. Make use of the TravellerRow function that draws one row.*/
   return (
-    <table className="bordered-table">
-      <thead>
-        <tr>
-          {/*Q3. Below table is just an example. Add more columns based on the traveller attributes you choose.*/}
-          <th>ID</th>
-          <th>Salutation</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Date Of Birth</th>
-          <th>Passport No.</th>
-          <th>Nationality</th>
-          <th>Country Of Residence</th>
-          <th>Phone</th>
-          <th>Booking Time</th>
-        </tr>
-      </thead>
-      <tbody>
-        {/*Q3. write code to call the JS variable defined at the top of this function to render table rows.*/}
-        {travellers.map((traveller, index) => {
-          return <TravellerRow key={index} traveller={traveller} />;
-        })}
-      </tbody>
-    </table>
+    <div>
+      <h2>Detailed View</h2>
+      <table className="bordered-table">
+        <thead>
+          <tr>
+            {/*Q3. Below table is just an example. Add more columns based on the traveller attributes you choose.*/}
+            <th>ID</th>
+            <th>Salutation</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Date Of Birth</th>
+            <th>Passport No.</th>
+            <th>Nationality</th>
+            <th>Country Of Residence</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Booking Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/*Q3. write code to call the JS variable defined at the top of this function to render table rows.*/}
+          {travellers.map((traveller, index) => {
+            return <TravellerRow key={index} traveller={traveller} />;
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-class Add extends React.Component {
-  constructor() {
-    super();
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
+function AddPage({ addFunc }) {
+  const [traveller, setTraveller] = React.useState({
+    id: "",
+    salutation: "",
+    firstName: "",
+    lastName: "",
+    dob: "",
+    passportNumber: "",
+    nationality: "",
+    countryOfResidence: "",
+    phoneNumber: "",
+    email: "",
+    bookingTime: "",
+  });
 
-  handleSubmit(e) {
-    e.preventDefault();
+  function handleSubmit(e) {
     /*Q4. Fetch the passenger details from the add form and call bookTraveller()*/
+    e.preventDefault();
+    addFunc(traveller);
   }
 
-  render() {
-    return (
-      <form name="addTraveller" onSubmit={this.handleSubmit}>
-        <p>THIS IS THE ADD PAGE!</p>
-        {/*Q4. Placeholder to enter passenger details. Below code is just an example.*/}
-        <input type="text" name="travellername" placeholder="Name" />
-        <button>Add</button>
-      </form>
-    );
+  function handleChange(e) {
+    const { name, value } = e.target;
+
+    setTraveller((prevTraveller) => ({
+      ...prevTraveller,
+      [name]: value,
+    }));
   }
+
+  return (
+    <div>
+      <h2>Add a Traveller</h2>
+      <form name="addTraveller" onSubmit={handleSubmit}>
+        {/*Q4. Placeholder to enter passenger details. Below code is just an example.*/}
+        <FormField
+          label="ID"
+          type="text"
+          name="id"
+          id="id"
+          value={traveller.id}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Salutation"
+          type="text"
+          name="salutation"
+          id="salutation"
+          value={traveller.salutation}
+          onChange={handleChange}
+        />
+        <FormField
+          label="First Name"
+          type="text"
+          name="firstName"
+          id="first-name"
+          value={traveller.firstName}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Last Name"
+          type="text"
+          name="lastName"
+          id="last-name"
+          value={traveller.lastName}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Date of Birth"
+          type="date"
+          name="dob"
+          id="dob"
+          value={traveller.dob}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Passport Number"
+          type="text"
+          name="passportNumber"
+          id="pasport-number"
+          value={traveller.passportNumber}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Nationality"
+          type="text"
+          name="nationality"
+          id="nationality"
+          value={traveller.nationality}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Country of Residence"
+          type="text"
+          name="countryOfResidence"
+          id="country-of-residence"
+          value={traveller.countryOfResidence}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Phone Number"
+          type="number"
+          name="phoneNumber"
+          id="phone-number"
+          value={traveller.phoneNumber}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Email"
+          type="email"
+          name="email"
+          id="email"
+          value={traveller.email}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Booking Time"
+          type="datetime-local"
+          name="bookingTime"
+          id="booking-time"
+          value={traveller.bookingTime}
+          onChange={handleChange}
+        />
+        <button type="submit">Add Traveller</button>
+      </form>
+    </div>
+  );
+}
+
+function FormField({ label, type, name, id, value, onChange }) {
+  return (
+    <div>
+      <label htmlFor={id}>{label}</label>
+      <br />
+      <input
+        id={id}
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+      />
+    </div>
+  );
 }
 
 class Delete extends React.Component {
@@ -113,7 +241,7 @@ class Delete extends React.Component {
   }
 }
 
-class Home extends React.Component {
+class HomePage extends React.Component {
   constructor() {
     super();
   }
@@ -126,6 +254,7 @@ class Home extends React.Component {
     );
   }
 }
+
 class TicketToRide extends React.Component {
   constructor() {
     super();
@@ -159,8 +288,15 @@ class TicketToRide extends React.Component {
     }
   }
 
-  bookTraveller(passenger) {
+  bookTraveller(newTraveller) {
     /*Q4. Write code to add a passenger to the traveller state variable.*/
+    let storedTravellers = JSON.parse(localStorage.getItem("storedTravellers"));
+    if (!storedTravellers) {
+      storedTravellers = [];
+    }
+    storedTravellers.push(newTraveller);
+    localStorage.setItem("storedTravellers", JSON.stringify(storedTravellers));
+    this.setState({ travellers: storedTravellers });
   }
 
   deleteTraveller(passenger) {
@@ -171,28 +307,27 @@ class TicketToRide extends React.Component {
       <div>
         <h1>Ticket To Ride</h1>
         <div>
-          <Nav navFunc={this.setSelector} />
           {/*Q2. Code for Navigation bar. Use basic buttons to create a nav bar. Use states to manage selection.*/}
+          <Nav navFunc={this.setSelector} />
         </div>
-        <div>
-          {/*Only one of the below four divisions is rendered based on the button clicked by the user.*/}
+        {/*Only one of the below four divisions is rendered based on the button clicked by the user.*/}
+        <main>
+          {/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
+          {/*Q3. Code to call component that Displays Travellers.*/}
+          {/*Q4. Code to call the component that adds a traveller.*/}
           {this.state.selector === "Home" ? (
-            <Home />
+            <HomePage />
           ) : this.state.selector === "Display" ? (
-            <Display travellers={this.state.travellers} />
+            <DisplayPage travellers={this.state.travellers} />
           ) : this.state.selector === "Add" ? (
-            <Add />
+            <AddPage addFunc={this.bookTraveller} />
           ) : this.state.selector === "Delete" ? (
             <Delete />
           ) : (
-            <Home />
+            <HomePage />
           )}
-          {/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
-          {/*Q3. Code to call component that Displays Travellers.*/}
-
-          {/*Q4. Code to call the component that adds a traveller.*/}
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
-        </div>
+        </main>
       </div>
     );
   }
