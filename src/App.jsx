@@ -71,6 +71,7 @@ class Add extends React.Component {
   render() {
     return (
       <form name="addTraveller" onSubmit={this.handleSubmit}>
+        <p>THIS IS THE ADD PAGE!</p>
         {/*Q4. Placeholder to enter passenger details. Below code is just an example.*/}
         <input type="text" name="travellername" placeholder="Name" />
         <button>Add</button>
@@ -93,6 +94,7 @@ class Delete extends React.Component {
     return (
       <form name="deleteTraveller" onSubmit={this.handleSubmit}>
         {/*Q5. Placeholder form to enter information on which passenger's ticket needs to be deleted. Below code is just an example.*/}
+        <p>THIS IS THE DELETE PAGE!</p>
         <input type="text" name="travellername" placeholder="Name" />
         <button>Delete</button>
       </form>
@@ -100,7 +102,7 @@ class Delete extends React.Component {
   }
 }
 
-class Homepage extends React.Component {
+class Home extends React.Component {
   constructor() {
     super();
   }
@@ -108,6 +110,7 @@ class Homepage extends React.Component {
     return (
       <div>
         {/*Q2. Placeholder for Homepage code that shows free seats visually.*/}
+        THIS IS THE HOME PAGE!
       </div>
     );
   }
@@ -115,7 +118,7 @@ class Homepage extends React.Component {
 class TicketToRide extends React.Component {
   constructor() {
     super();
-    this.state = { travellers: [], selector: 1 };
+    this.state = { travellers: [], selector: "Home" };
     this.bookTraveller = this.bookTraveller.bind(this);
     this.deleteTraveller = this.deleteTraveller.bind(this);
     this.setSelector = this.setSelector.bind(this);
@@ -123,7 +126,9 @@ class TicketToRide extends React.Component {
 
   setSelector(value) {
     /*Q2. Function to set the value of component selector variable based on user's button click.*/
+    this.setState({ selector: value });
   }
+
   componentDidMount() {
     this.loadData();
   }
@@ -155,10 +160,22 @@ class TicketToRide extends React.Component {
       <div>
         <h1>Ticket To Ride</h1>
         <div>
+          <Nav navFunc={this.setSelector} />
           {/*Q2. Code for Navigation bar. Use basic buttons to create a nav bar. Use states to manage selection.*/}
         </div>
         <div>
           {/*Only one of the below four divisions is rendered based on the button clicked by the user.*/}
+          {this.state.selector === "Home" ? (
+            <Home />
+          ) : this.state.selector === "Display" ? (
+            <Display />
+          ) : this.state.selector === "Add" ? (
+            <Add />
+          ) : this.state.selector === "Delete" ? (
+            <Delete />
+          ) : (
+            <Home />
+          )}
           {/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
           {/*Q3. Code to call component that Displays Travellers.*/}
 
@@ -170,6 +187,20 @@ class TicketToRide extends React.Component {
   }
 }
 
-const element = <TicketToRide />;
+function Nav({ navFunc }) {
+  return (
+    <nav>
+      <NavLink text="Home" clickFn={navFunc} selector="Home" />
+      <NavLink text="Display" clickFn={navFunc} selector="Display" />
+      <NavLink text="Add" clickFn={navFunc} selector="Add" />
+      <NavLink text="Delete" clickFn={navFunc} selector="Delete" />
+    </nav>
+  );
+}
 
+function NavLink({ text, clickFn, selector }) {
+  return <button onClick={() => clickFn(selector)}>{text}</button>;
+}
+
+const element = <TicketToRide />;
 ReactDOM.render(element, document.getElementById("contents"));
