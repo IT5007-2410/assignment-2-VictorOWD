@@ -1,6 +1,11 @@
-const initialTravellers = [
-  {
-    id: 1,
+const initialId = 1;
+const initialTravellers = {};
+/*
+Commenting out to start application with no travellers in the table
+for practical reasons but leaving commented out code 
+in file for Q1 submission purposes earlier.
+const initialTravellers = {
+  1: {
     salutation: "Mr.",
     firstName: "Jack",
     lastName: "Reacher",
@@ -12,8 +17,7 @@ const initialTravellers = [
     email: "hello@tickettoride.com",
     bookingTime: "",
   },
-  {
-    id: 2,
+  2: {
     salutation: "Ms.",
     firstName: "Rose",
     lastName: "Wilted",
@@ -25,14 +29,16 @@ const initialTravellers = [
     email: "hello@tickettoride.com",
     bookingTime: "",
   },
-];
+};
+*/
 
-function TravellerRow({ traveller }) {
+function TravellerRow({ id, traveller }) {
   {
     /*Q3. Placeholder to initialize local variable based on traveller prop.*/
   }
   return (
     <tr>
+      <td>{id}</td>
       {/*Q3. Placeholder for rendering one row of a table with required traveller attribute values.*/}
       {Object.values(traveller).map((value, index) => {
         return <td key={index}>{value}</td>;
@@ -65,8 +71,8 @@ function DisplayPage({ travellers }) {
         </thead>
         <tbody>
           {/*Q3. write code to call the JS variable defined at the top of this function to render table rows.*/}
-          {travellers.map((traveller, index) => {
-            return <TravellerRow key={index} traveller={traveller} />;
+          {Object.entries(travellers).map(([id, traveller], index) => {
+            return <TravellerRow key={index} id={id} traveller={traveller} />;
           })}
         </tbody>
       </table>
@@ -74,9 +80,8 @@ function DisplayPage({ travellers }) {
   );
 }
 
-function AddPage({ addFunc }) {
+function AddPage({ currentId, addFunc }) {
   const [traveller, setTraveller] = React.useState({
-    id: "",
     salutation: "",
     firstName: "",
     lastName: "",
@@ -114,8 +119,10 @@ function AddPage({ addFunc }) {
           type="text"
           name="id"
           id="id"
-          value={traveller.id}
-          onChange={handleChange}
+          value={currentId}
+          placeholder={null}
+          onChange={null}
+          disabled={true}
         />
         <FormField
           label="Salutation"
@@ -123,7 +130,9 @@ function AddPage({ addFunc }) {
           name="salutation"
           id="salutation"
           value={traveller.salutation}
+          placeholder="Mr, Master, Mdm, Ms"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="First Name"
@@ -131,7 +140,9 @@ function AddPage({ addFunc }) {
           name="firstName"
           id="first-name"
           value={traveller.firstName}
+          placeholder="John"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="Last Name"
@@ -139,7 +150,9 @@ function AddPage({ addFunc }) {
           name="lastName"
           id="last-name"
           value={traveller.lastName}
+          placeholder="Doe"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="Date of Birth"
@@ -147,7 +160,9 @@ function AddPage({ addFunc }) {
           name="dob"
           id="dob"
           value={traveller.dob}
+          placeholder="1970-1-1"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="Passport Number"
@@ -155,7 +170,9 @@ function AddPage({ addFunc }) {
           name="passportNumber"
           id="pasport-number"
           value={traveller.passportNumber}
+          placeholder="E1234567X"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="Nationality"
@@ -163,7 +180,9 @@ function AddPage({ addFunc }) {
           name="nationality"
           id="nationality"
           value={traveller.nationality}
+          placeholder="Singaporean"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="Country of Residence"
@@ -171,7 +190,9 @@ function AddPage({ addFunc }) {
           name="countryOfResidence"
           id="country-of-residence"
           value={traveller.countryOfResidence}
+          placeholder="Singapore"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="Phone Number"
@@ -179,7 +200,9 @@ function AddPage({ addFunc }) {
           name="phoneNumber"
           id="phone-number"
           value={traveller.phoneNumber}
+          placeholder="98765432"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="Email"
@@ -187,7 +210,9 @@ function AddPage({ addFunc }) {
           name="email"
           id="email"
           value={traveller.email}
+          placeholder="hello@tickettoride.com"
           onChange={handleChange}
+          disabled={false}
         />
         <FormField
           label="Booking Time"
@@ -195,7 +220,9 @@ function AddPage({ addFunc }) {
           name="bookingTime"
           id="booking-time"
           value={traveller.bookingTime}
+          placeholder="2024-09-30T03:00"
           onChange={handleChange}
+          disabled={false}
         />
         <button type="submit">Add Traveller</button>
       </form>
@@ -203,7 +230,16 @@ function AddPage({ addFunc }) {
   );
 }
 
-function FormField({ label, type, name, id, value, onChange }) {
+function FormField({
+  label,
+  type,
+  name,
+  id,
+  value,
+  placeholder,
+  onChange,
+  disabled,
+}) {
   return (
     <div>
       <label htmlFor={id}>{label}</label>
@@ -213,7 +249,9 @@ function FormField({ label, type, name, id, value, onChange }) {
         type={type}
         name={name}
         value={value}
+        placeholder={placeholder}
         onChange={onChange}
+        disabled={disabled}
       />
     </div>
   );
@@ -258,7 +296,7 @@ class HomePage extends React.Component {
 class TicketToRide extends React.Component {
   constructor() {
     super();
-    this.state = { travellers: [], selector: "Home" };
+    this.state = { currentId: 0, travellers: {}, selector: "Home" };
     this.bookTraveller = this.bookTraveller.bind(this);
     this.deleteTraveller = this.deleteTraveller.bind(this);
     this.setSelector = this.setSelector.bind(this);
@@ -274,9 +312,11 @@ class TicketToRide extends React.Component {
   }
 
   loadData() {
+    const currentId = Number(JSON.parse(localStorage.getItem("currentId")));
     const storedTravellers = JSON.parse(
       localStorage.getItem("storedTravellers")
     );
+
     if (storedTravellers) {
       this.setState({ travellers: storedTravellers });
     } else {
@@ -286,20 +326,38 @@ class TicketToRide extends React.Component {
       );
       this.setState({ travellers: initialTravellers });
     }
+
+    if (currentId) {
+      this.setState({ currentId: initialId });
+    } else {
+      localStorage.setItem("currentId", JSON.stringify(initialId));
+      this.setState({ currentId: initialId });
+    }
+  }
+
+  getCurrentId() {
+    return Number(localStorage.getItem("currentId"));
   }
 
   bookTraveller(newTraveller) {
     /*Q4. Write code to add a passenger to the traveller state variable.*/
     let storedTravellers = JSON.parse(localStorage.getItem("storedTravellers"));
+    let currentId = this.getCurrentId();
     if (!storedTravellers) {
-      storedTravellers = [];
+      storedTravellers = initialTravellers;
     }
-    storedTravellers.push(newTraveller);
+    if (!currentId) {
+      currentId = initialId;
+    }
+    storedTravellers[currentId] = newTraveller;
+    currentId++;
+    localStorage.setItem("initialId", JSON.stringify(currentId));
     localStorage.setItem("storedTravellers", JSON.stringify(storedTravellers));
+    this.setState({ currentId: currentId });
     this.setState({ travellers: storedTravellers });
   }
 
-  deleteTraveller(passenger) {
+  deleteTraveller(travellerKey) {
     /*Q5. Write code to delete a passenger from the traveller state variable.*/
   }
   render() {
@@ -320,7 +378,10 @@ class TicketToRide extends React.Component {
           ) : this.state.selector === "Display" ? (
             <DisplayPage travellers={this.state.travellers} />
           ) : this.state.selector === "Add" ? (
-            <AddPage addFunc={this.bookTraveller} />
+            <AddPage
+              currentId={this.state.currentId}
+              addFunc={this.bookTraveller}
+            />
           ) : this.state.selector === "Delete" ? (
             <Delete />
           ) : (
