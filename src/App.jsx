@@ -32,7 +32,7 @@ const initialTravellers = {
 };
 */
 
-function TravellerRow({ id, traveller }) {
+function TravellerRow({ id, displayedTraveller, deleteFunc }) {
   {
     /*Q3. Placeholder to initialize local variable based on traveller prop.*/
   }
@@ -40,15 +40,26 @@ function TravellerRow({ id, traveller }) {
     <tr>
       <td>{id}</td>
       {/*Q3. Placeholder for rendering one row of a table with required traveller attribute values.*/}
-      {Object.values(traveller).map((value, index) => {
+      {Object.entries(displayedTraveller).map(([key, value], index) => {
+        if (key == "isDisplayed") return null;
         return <td key={index}>{value}</td>;
       })}
+      <td>
+        <button onClick={() => deleteFunc(id)}>Delete</button>
+      </td>
     </tr>
   );
 }
 
-function DisplayPage({ travellers }) {
+function DisplayPage({ travellers, deleteFunc }) {
   /*Q3. Write code to render rows of table, reach corresponding to one traveller. Make use of the TravellerRow function that draws one row.*/
+  const displayedTravellers = {};
+  Object.entries(travellers).forEach(([id, traveller]) => {
+    if (traveller.isDisplayed) {
+      displayedTravellers[id] = traveller;
+    }
+  });
+
   return (
     <div>
       <h2>Detailed View</h2>
@@ -67,13 +78,29 @@ function DisplayPage({ travellers }) {
             <th>Phone</th>
             <th>Email</th>
             <th>Booking Time</th>
+            <th>Amend</th>
           </tr>
         </thead>
         <tbody>
           {/*Q3. write code to call the JS variable defined at the top of this function to render table rows.*/}
-          {Object.entries(travellers).map(([id, traveller], index) => {
-            return <TravellerRow key={index} id={id} traveller={traveller} />;
-          })}
+          {Object.keys(displayedTravellers).length === 0 ? (
+            <tr>
+              <td colSpan={12}>No travellers found. Add a traveller first.</td>
+            </tr>
+          ) : (
+            Object.entries(displayedTravellers).map(
+              ([id, displayedTraveller]) => {
+                return (
+                  <TravellerRow
+                    key={id}
+                    id={id}
+                    displayedTraveller={displayedTraveller}
+                    deleteFunc={deleteFunc}
+                  />
+                );
+              }
+            )
+          )}
         </tbody>
       </table>
     </div>
@@ -92,6 +119,7 @@ function AddPage({ currentId, addFunc }) {
     phoneNumber: "",
     email: "",
     bookingTime: "",
+    isDisplayed: true,
   });
 
   function handleSubmit(e) {
@@ -257,28 +285,6 @@ function FormField({
   );
 }
 
-class Delete extends React.Component {
-  constructor() {
-    super();
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
-  handleSubmit(e) {
-    e.preventDefault();
-    /*Q5. Fetch the passenger details from the deletion form and call deleteTraveller()*/
-  }
-
-  render() {
-    return (
-      <form name="deleteTraveller" onSubmit={this.handleSubmit}>
-        {/*Q5. Placeholder form to enter information on which passenger's ticket needs to be deleted. Below code is just an example.*/}
-        <p>THIS IS THE DELETE PAGE!</p>
-        <input type="text" name="travellername" placeholder="Name" />
-        <button>Delete</button>
-      </form>
-    );
-  }
-}
-
 class HomePage extends React.Component {
   constructor() {
     super();
@@ -328,7 +334,7 @@ class TicketToRide extends React.Component {
     }
 
     if (currentId) {
-      this.setState({ currentId: initialId });
+      this.setState({ currentId: currentId });
     } else {
       localStorage.setItem("currentId", JSON.stringify(initialId));
       this.setState({ currentId: initialId });
@@ -343,23 +349,33 @@ class TicketToRide extends React.Component {
     /*Q4. Write code to add a passenger to the traveller state variable.*/
     let storedTravellers = JSON.parse(localStorage.getItem("storedTravellers"));
     let currentId = this.getCurrentId();
+
     if (!storedTravellers) {
       storedTravellers = initialTravellers;
     }
     if (!currentId) {
       currentId = initialId;
     }
+
     storedTravellers[currentId] = newTraveller;
     currentId++;
-    localStorage.setItem("initialId", JSON.stringify(currentId));
+
+    localStorage.setItem("currentId", JSON.stringify(currentId));
     localStorage.setItem("storedTravellers", JSON.stringify(storedTravellers));
-    this.setState({ currentId: currentId });
-    this.setState({ travellers: storedTravellers });
+
+    this.setState({ currentId, travellers: storedTravellers });
   }
 
   deleteTraveller(travellerKey) {
     /*Q5. Write code to delete a passenger from the traveller state variable.*/
+    if (window.confirm(`Confirm to delete traveller id: ${travellerKey}`)) {
+      const travellers = JSON.parse(localStorage.getItem("storedTravellers"));
+      travellers[travellerKey].isDisplayed = false;
+      localStorage.setItem("storedTravellers", JSON.stringify(travellers));
+      this.setState({ travellers: travellers });
+    }
   }
+
   render() {
     return (
       <div>
@@ -373,21 +389,22 @@ class TicketToRide extends React.Component {
           {/*Q2 and Q6. Code to call Instance that draws Homepage. Homepage shows Visual Representation of free seats.*/}
           {/*Q3. Code to call component that Displays Travellers.*/}
           {/*Q4. Code to call the component that adds a traveller.*/}
+          {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
           {this.state.selector === "Home" ? (
             <HomePage />
           ) : this.state.selector === "Display" ? (
-            <DisplayPage travellers={this.state.travellers} />
+            <DisplayPage
+              travellers={this.state.travellers}
+              deleteFunc={this.deleteTraveller}
+            />
           ) : this.state.selector === "Add" ? (
             <AddPage
               currentId={this.state.currentId}
               addFunc={this.bookTraveller}
             />
-          ) : this.state.selector === "Delete" ? (
-            <Delete />
           ) : (
             <HomePage />
           )}
-          {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
         </main>
       </div>
     );
@@ -400,7 +417,6 @@ function Nav({ navFunc }) {
       <NavLink text="Home" clickFn={navFunc} selector="Home" />
       <NavLink text="Display" clickFn={navFunc} selector="Display" />
       <NavLink text="Add" clickFn={navFunc} selector="Add" />
-      <NavLink text="Delete" clickFn={navFunc} selector="Delete" />
     </nav>
   );
 }
