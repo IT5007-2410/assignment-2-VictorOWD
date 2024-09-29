@@ -25,33 +25,44 @@ const initialTravellers = [
   },
 ];
 
-function TravellerRow(props) {
+function TravellerRow({ traveller }) {
   {
     /*Q3. Placeholder to initialize local variable based on traveller prop.*/
   }
   return (
     <tr>
       {/*Q3. Placeholder for rendering one row of a table with required traveller attribute values.*/}
+      {Object.values(traveller).map((value, index) => {
+        return <td key={index}>{value}</td>;
+      })}
     </tr>
   );
 }
 
-function Display(props) {
+function Display({ travellers }) {
   /*Q3. Write code to render rows of table, reach corresponding to one traveller. Make use of the TravellerRow function that draws one row.*/
-
   return (
     <table className="bordered-table">
       <thead>
         <tr>
           {/*Q3. Below table is just an example. Add more columns based on the traveller attributes you choose.*/}
           <th>ID</th>
-          <th>Name</th>
+          <th>Salutation</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Date Of Birth</th>
+          <th>Passport No.</th>
+          <th>Nationality</th>
+          <th>Country Of Residence</th>
           <th>Phone</th>
           <th>Booking Time</th>
         </tr>
       </thead>
       <tbody>
         {/*Q3. write code to call the JS variable defined at the top of this function to render table rows.*/}
+        {travellers.map((traveller, index) => {
+          return <TravellerRow key={index} traveller={traveller} />;
+        })}
       </tbody>
     </table>
   );
@@ -168,7 +179,7 @@ class TicketToRide extends React.Component {
           {this.state.selector === "Home" ? (
             <Home />
           ) : this.state.selector === "Display" ? (
-            <Display />
+            <Display travellers={this.state.travellers} />
           ) : this.state.selector === "Add" ? (
             <Add />
           ) : this.state.selector === "Delete" ? (
