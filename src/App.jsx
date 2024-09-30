@@ -35,7 +35,7 @@ const initialTravellers = {
 };
 */
 
-function TravellerRow({ id, displayedTraveller, deleteFunc }) {
+function TravellerRow({ id, activeTraveller, deleteFunc }) {
   {
     /*Q3. Placeholder to initialize local variable based on traveller prop.*/
   }
@@ -43,7 +43,7 @@ function TravellerRow({ id, displayedTraveller, deleteFunc }) {
     <tr>
       <td>{id}</td>
       {/*Q3. Placeholder for rendering one row of a table with required traveller attribute values.*/}
-      {Object.entries(displayedTraveller).map(([key, value], index) => {
+      {Object.entries(activeTraveller).map(([key, value], index) => {
         if (key == "isDisplayed") return null;
         return <td key={index}>{value}</td>;
       })}
@@ -54,15 +54,8 @@ function TravellerRow({ id, displayedTraveller, deleteFunc }) {
   );
 }
 
-function DisplayPage({ travellers, deleteFunc }) {
+function DisplayPage({ activeTravellers, deleteFunc }) {
   /*Q3. Write code to render rows of table, reach corresponding to one traveller. Make use of the TravellerRow function that draws one row.*/
-  const displayedTravellers = {};
-  Object.entries(travellers).forEach(([id, traveller]) => {
-    if (traveller.isDisplayed) {
-      displayedTravellers[id] = traveller;
-    }
-  });
-
   return (
     <div>
       <h2>Detailed View</h2>
@@ -86,23 +79,21 @@ function DisplayPage({ travellers, deleteFunc }) {
         </thead>
         <tbody>
           {/*Q3. write code to call the JS variable defined at the top of this function to render table rows.*/}
-          {Object.keys(displayedTravellers).length === 0 ? (
+          {Object.keys(activeTravellers).length === 0 ? (
             <tr>
               <td colSpan={12}>No travellers found. Add a traveller first.</td>
             </tr>
           ) : (
-            Object.entries(displayedTravellers).map(
-              ([id, displayedTraveller]) => {
-                return (
-                  <TravellerRow
-                    key={id}
-                    id={id}
-                    displayedTraveller={displayedTraveller}
-                    deleteFunc={deleteFunc}
-                  />
-                );
-              }
-            )
+            Object.entries(activeTravellers).map(([id, activeTraveller]) => {
+              return (
+                <TravellerRow
+                  key={id}
+                  id={id}
+                  activeTraveller={activeTraveller}
+                  deleteFunc={deleteFunc}
+                />
+              );
+            })
           )}
         </tbody>
       </table>
@@ -111,7 +102,7 @@ function DisplayPage({ travellers, deleteFunc }) {
 }
 
 function AddPage({ currentId, addFunc }) {
-  const [traveller, setTraveller] = React.useState({
+  const emptyFormFields = {
     salutation: "",
     firstName: "",
     lastName: "",
@@ -123,12 +114,23 @@ function AddPage({ currentId, addFunc }) {
     email: "",
     bookingTime: "",
     isDisplayed: true,
-  });
+  };
+
+  const [traveller, setTraveller] = React.useState(emptyFormFields);
+  const [message, setMessage] = React.useState("");
+  const [success, setSuccess] = React.useState(true);
 
   function handleSubmit(e) {
     /*Q4. Fetch the passenger details from the add form and call bookTraveller()*/
     e.preventDefault();
-    addFunc(traveller);
+    if (addFunc(traveller)) {
+      setMessage("Successfully added traveller!");
+      setSuccess(true);
+      setTraveller(emptyFormFields);
+    } else {
+      setMessage("Cannot add more passengers than seats available!");
+      setSuccess(false);
+    }
   }
 
   function handleChange(e) {
@@ -257,6 +259,9 @@ function AddPage({ currentId, addFunc }) {
         />
         <button type="submit">Add Traveller</button>
       </form>
+      {message && (
+        <div style={{ color: success ? "green" : "red" }}>{message}</div>
+      )}
     </div>
   );
 }
@@ -283,18 +288,14 @@ function FormField({
         placeholder={placeholder}
         onChange={onChange}
         disabled={disabled}
+        required
       />
     </div>
   );
 }
 
-function HomePage({ travellers }) {
-  let occupiedSeats = 0;
-  Object.entries(travellers).forEach(([, traveller]) => {
-    if (traveller.isDisplayed) {
-      occupiedSeats++;
-    }
-  });
+function HomePage({ activeTravellers }) {
+  let occupiedSeats = Object.entries(activeTravellers).length;
 
   function renderSeats() {
     const seats = [];
@@ -364,7 +365,12 @@ function SeatBox({ isOccupied, text }) {
 class TicketToRide extends React.Component {
   constructor() {
     super();
-    this.state = { currentId: 0, travellers: {}, selector: "Home" };
+    this.state = {
+      currentId: 0,
+      allTravellers: {},
+      activeTravellers: {},
+      selector: "Home",
+    };
     this.bookTraveller = this.bookTraveller.bind(this);
     this.deleteTraveller = this.deleteTraveller.bind(this);
     this.setSelector = this.setSelector.bind(this);
@@ -380,27 +386,38 @@ class TicketToRide extends React.Component {
   }
 
   loadData() {
-    const currentId = Number(JSON.parse(localStorage.getItem("currentId")));
-    const storedTravellers = JSON.parse(
-      localStorage.getItem("storedTravellers")
-    );
+    let currentId = Number(JSON.parse(localStorage.getItem("currentId")));
+    let allTravellers = JSON.parse(localStorage.getItem("allTravellers"));
 
-    if (storedTravellers) {
-      this.setState({ travellers: storedTravellers });
+    if (allTravellers) {
+      this.setState({ allTravellers }, () => {
+        this.updateActiveTravellers(allTravellers);
+      });
     } else {
-      localStorage.setItem(
-        "storedTravellers",
-        JSON.stringify(initialTravellers)
-      );
-      this.setState({ travellers: initialTravellers });
+      allTravellers = initialTravellers;
+      localStorage.setItem("allTravellers", JSON.stringify(allTravellers));
+      this.setState({ allTravellers }, () => {
+        this.updateActiveTravellers(allTravellers);
+      });
     }
 
     if (currentId) {
       this.setState({ currentId: currentId });
     } else {
-      localStorage.setItem("currentId", JSON.stringify(initialId));
-      this.setState({ currentId: initialId });
+      currentId = initialId;
+      localStorage.setItem("currentId", JSON.stringify(currentId));
+      this.setState({ currentId });
     }
+  }
+
+  updateActiveTravellers(allTravellers) {
+    const activeTravellers = {};
+    Object.entries(allTravellers).forEach(([id, traveller]) => {
+      if (traveller.isDisplayed) {
+        activeTravellers[id] = traveller;
+      }
+    });
+    this.setState({ activeTravellers: activeTravellers });
   }
 
   getCurrentId() {
@@ -409,32 +426,44 @@ class TicketToRide extends React.Component {
 
   bookTraveller(newTraveller) {
     /*Q4. Write code to add a passenger to the traveller state variable.*/
-    let storedTravellers = JSON.parse(localStorage.getItem("storedTravellers"));
+    if (Object.keys(this.state.activeTravellers).length == maxSeats) {
+      return false;
+    }
+
+    let allTravellers = JSON.parse(localStorage.getItem("allTravellers"));
     let currentId = this.getCurrentId();
 
-    if (!storedTravellers) {
-      storedTravellers = initialTravellers;
+    if (!allTravellers) {
+      allTravellers = initialTravellers;
     }
     if (!currentId) {
       currentId = initialId;
     }
 
-    storedTravellers[currentId] = newTraveller;
+    allTravellers[currentId] = newTraveller;
     currentId++;
 
     localStorage.setItem("currentId", JSON.stringify(currentId));
-    localStorage.setItem("storedTravellers", JSON.stringify(storedTravellers));
+    localStorage.setItem("allTravellers", JSON.stringify(allTravellers));
 
-    this.setState({ currentId, travellers: storedTravellers });
+    this.setState({ currentId, allTravellers }, () => {
+      this.updateActiveTravellers(allTravellers);
+    });
+    return true;
   }
 
   deleteTraveller(travellerKey) {
     /*Q5. Write code to delete a passenger from the traveller state variable.*/
     if (window.confirm(`Confirm to delete traveller id: ${travellerKey}`)) {
-      const travellers = JSON.parse(localStorage.getItem("storedTravellers"));
-      travellers[travellerKey].isDisplayed = false;
-      localStorage.setItem("storedTravellers", JSON.stringify(travellers));
-      this.setState({ travellers: travellers });
+      const allTravellers = JSON.parse(localStorage.getItem("allTravellers"));
+
+      allTravellers[travellerKey].isDisplayed = false;
+
+      localStorage.setItem("allTravellers", JSON.stringify(allTravellers));
+
+      this.setState({ allTravellers }, () => {
+        this.updateActiveTravellers(allTravellers);
+      });
     }
   }
 
@@ -453,10 +482,10 @@ class TicketToRide extends React.Component {
           {/*Q4. Code to call the component that adds a traveller.*/}
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
           {this.state.selector === "Home" ? (
-            <HomePage travellers={this.state.travellers} />
+            <HomePage activeTravellers={this.state.activeTravellers} />
           ) : this.state.selector === "Display" ? (
             <DisplayPage
-              travellers={this.state.travellers}
+              activeTravellers={this.state.activeTravellers}
               deleteFunc={this.deleteTraveller}
             />
           ) : this.state.selector === "Add" ? (
