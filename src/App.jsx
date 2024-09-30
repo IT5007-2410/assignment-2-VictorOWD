@@ -1,5 +1,8 @@
+// Global configs
 const initialId = 1;
 const initialTravellers = {};
+const maxSeats = 10;
+
 /*
 Commenting out to start application with no travellers in the table
 for practical reasons but leaving commented out code 
@@ -285,18 +288,77 @@ function FormField({
   );
 }
 
-class HomePage extends React.Component {
-  constructor() {
-    super();
+function HomePage({ travellers }) {
+  let occupiedSeats = 0;
+  Object.entries(travellers).forEach(([, traveller]) => {
+    if (traveller.isDisplayed) {
+      occupiedSeats++;
+    }
+  });
+
+  function renderSeats() {
+    const seats = [];
+    for (let i = 0; i < occupiedSeats; i++) {
+      seats.push(<SeatBox isOccupied={true} text={i + 1} key={i + 1} />);
+    }
+    for (let i = 0; i < maxSeats - occupiedSeats; i++) {
+      seats.push(
+        <SeatBox
+          isOccupied={false}
+          text={i + 1 + occupiedSeats}
+          key={i + 1 + occupiedSeats}
+        />
+      );
+    }
+    return seats;
   }
-  render() {
-    return (
-      <div>
-        {/*Q2. Placeholder for Homepage code that shows free seats visually.*/}
-        THIS IS THE HOME PAGE!
+
+  return (
+    <div style={{ display: "flex", flexFlow: "column wrap", gap: "10px" }}>
+      {/*Q2. Placeholder for Homepage code that shows free seats visually.*/}
+      <h2>Overview</h2>
+      <div style={{ display: "flex", flexFlow: "column wrap" }}>
+        <h3>Legend</h3>
+        <div style={{ display: "flex", flexFlow: "row wrap", gap: "10px" }}>
+          <SeatBox isOccupied={true} text="occupied" />
+          <SeatBox isOccupied={false} text="Available" />
+        </div>
       </div>
-    );
-  }
+      <hr style={{ width: "100%", height: "3px" }} />
+      <div style={{ display: "flex", flexFlow: "column wrap" }}>
+        <h3>Current Capacity</h3>
+        <div
+          style={{
+            display: "flex",
+            flexFlow: "row wrap",
+            gap: "10px",
+            width: "230px",
+          }}
+        >
+          {renderSeats()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SeatBox({ isOccupied, text }) {
+  const seatColor = isOccupied ? "red" : "green";
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: seatColor,
+        width: "100px",
+        height: "100px",
+        wordWrap: "break-word",
+      }}
+    >
+      {text}
+    </div>
+  );
 }
 
 class TicketToRide extends React.Component {
@@ -391,7 +453,7 @@ class TicketToRide extends React.Component {
           {/*Q4. Code to call the component that adds a traveller.*/}
           {/*Q5. Code to call the component that deletes a traveller based on a given attribute.*/}
           {this.state.selector === "Home" ? (
-            <HomePage />
+            <HomePage travellers={this.state.travellers} />
           ) : this.state.selector === "Display" ? (
             <DisplayPage
               travellers={this.state.travellers}
