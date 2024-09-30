@@ -1,3 +1,7 @@
+/*
+  Added: Bootstrap framework in index.html
+*/
+
 // Global configs
 const initialId = 1;
 const initialTravellers = {};
@@ -59,7 +63,7 @@ function DisplayPage({ activeTravellers, deleteFunc }) {
   return (
     <div>
       <h2>Detailed View</h2>
-      <table className="bordered-table">
+      <table>
         <thead>
           <tr>
             {/*Q3. Below table is just an example. Add more columns based on the traveller attributes you choose.*/}
