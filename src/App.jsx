@@ -103,15 +103,7 @@ function TicketToRide() {
     }
 
     let newId = currentId;
-    // This validation might not be required 
-    // since loadPage guarantees that both will not be null
-    // Even if data is cleared
-    // if (!allPassengers) {
-    //   allPassengers = initialPassengers;
-    // }
-    // if (!currentId) {
-    //   currentId = initialId;
-    // }
+
     setAllPassengers((existingPassengers) => {
       return {
         ...existingPassengers,
@@ -424,7 +416,6 @@ function AddPage({ activePassengers, currentId, addFunc }) {
           </p>
         </div>
         <form name="addPassenger" onSubmit={handleSubmit}>
-          {/*Q4. Placeholder to enter passenger details. Below code is just an example.*/}
           <FormField
             label="ID"
             type="text"
